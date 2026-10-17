@@ -603,6 +603,8 @@ graphify export html  # auto-aggregates to community view if graph > 5000 nodes
 # or: graphify export html --no-viz
 ```
 
+`graph.html` ships with the themed viewer: frosted sidebar, one colour per community, Inspect connections with Enter/Exit tabs, and an optional "Arrange by zone" layout (Back end / Front end / Run / Data). Set `GRAPHIFY_THEME=0` for the stock page. After generating, tell the user to open it over a local server (`python -m http.server` in `graphify-out/`) or by double-clicking `graph.html`.
+
 ### Steps 6b-8 - Wiki, Neo4j, FalkorDB, SVG, GraphML, MCP, benchmark (only on their flags)
 
 These run only when their flag is present (`--wiki`, `--neo4j`/`--neo4j-push`, `--falkordb`/`--falkordb-push`, `--svg`, `--graphml`, `--mcp`) or, for the token-reduction benchmark, when `total_words` exceeds 5,000. A default run with no export flags skips all of them. See `references/exports.md` for each one. Run any `--wiki` export before Step 9 cleanup so `.graphify_labels.json` is still available.

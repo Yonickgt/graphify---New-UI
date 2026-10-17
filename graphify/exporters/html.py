@@ -14,6 +14,19 @@ from graphify.security import sanitize_label
 MAX_NODES_FOR_VIZ = 5_000
 _HTML_STALE_MARKER = ".graph.html.stale"
 
+def _apply_theme(html: str) -> str:
+    """Inject the graphify sidebar/zones theme (exporters/theme/graphify-theme.html).
+
+    Idempotent. Set GRAPHIFY_THEME=0 to keep the stock page.
+    """
+    import os
+    if os.environ.get("GRAPHIFY_THEME", "1").strip() == "0" or 'id="gf-theme"' in html:
+        return html
+    frag = (Path(__file__).parent / "theme" / "graphify-theme.html").read_text(encoding="utf-8")
+    i = html.rindex("</body>")
+    return html[:i] + frag + "\n" + html[i:]
+
+
 def _viz_node_limit() -> int:
     """Return the effective viz node limit, honoring GRAPHIFY_VIZ_NODE_LIMIT env var.
 
@@ -777,5 +790,5 @@ def to_html(
 </body>
 </html>"""
 
-    write_text_atomic(output_path, html)
+    write_text_atomic(output_path, _apply_theme(html))
     return True

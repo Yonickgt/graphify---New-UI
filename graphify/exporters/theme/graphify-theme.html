@@ -1,0 +1,845 @@
+<!-- graphify-theme v2: frosted sidebar (base) / black rail (minimised) / component-sheet node panel (expanded). Safe to re-run (guarded by window.__gfTheme) -->
+<style id="gf-theme">
+:root{
+  --gf-ink:#1b1e1f; --gf-mute:#5d6165; --gf-faint:#9a9ea2; --gf-line:rgba(20,22,24,.09);
+  --gf-chip:rgba(20,22,24,.06); --gf-paper:#fff; --gf-stage:#e3e8e8; --gf-dark:#1f2a2a;
+  --gf-canvas:#0d0e0f;
+  --gf-sans:"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  --gf-mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --gf-ease:cubic-bezier(.16,1,.3,1);
+  --gf-sbw:326px;
+}
+body{background:#000;font-family:var(--gf-sans);--gf-sbw:326px}
+body.gf-min{--gf-sbw:64px}
+::selection{background:var(--gf-dark);color:#fff}
+
+/* canvas: rounded stage, flush against the rail when minimised */
+#graph{order:2;flex:1;min-width:0;background:var(--gf-canvas);border-radius:22px;margin:10px 10px 10px 0;overflow:hidden}
+body.gf-min #graph{margin:0;border-radius:22px 0 0 22px}
+
+#sidebar.gf{order:1;flex:0 0 326px;width:326px;padding:10px;background:transparent;border:0;display:block;color:var(--gf-ink);font:14px/1.35 var(--gf-sans)}
+#sidebar.gf *{box-sizing:border-box}
+#sidebar.gf button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+#sidebar.gf .ic{width:20px;height:20px;flex:none;display:block}
+#sidebar.gf :focus-visible{outline:2px solid var(--gf-ink);outline-offset:2px}
+body.gf-min #sidebar.gf{flex:0 0 64px;width:64px;padding:0}
+
+/* ===== base: frosted panel ===== */
+.gf-full{height:100%;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;position:relative;
+  background:linear-gradient(180deg,#eff0f2 0%,#e5e7ea 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 18px 40px -12px rgba(0,0,0,.6)}
+body.gf-min .gf-full{display:none}
+.gf-top{display:flex;align-items:center;gap:12px;padding:16px 14px 10px 16px}
+.gf-orb{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;
+  background:conic-gradient(from 210deg,#ff6aa8,#7b61ff,#33b8ff,#ff6aa8);box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.gf-orb .ic{width:22px;height:22px}
+.gf-who{flex:1;min-width:0}
+.gf-who b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-who span{display:block;font-size:13px;color:var(--gf-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#sidebar.gf .gf-iconbtn{width:36px;height:36px;border-radius:14px;display:grid;place-items:center;color:var(--gf-mute);flex:none}
+#sidebar.gf .gf-iconbtn:hover{background:var(--gf-chip);color:var(--gf-ink)}
+
+.gf-find{position:relative;margin:4px 14px 6px;height:42px;border-radius:14px;background:var(--gf-chip);box-shadow:inset 0 0 0 1px rgba(20,22,24,.05);display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--gf-mute)}
+.gf-find:focus-within{background:#fff;box-shadow:0 0 0 2px var(--gf-ink)}
+#sidebar.gf #search{flex:1;min-width:0;height:100%;width:auto;background:transparent;border:0;border-radius:0;padding:0;font:inherit;font-size:14.5px;color:var(--gf-ink);outline:none}
+#sidebar.gf #search::placeholder{color:var(--gf-mute);opacity:1}
+.gf-kbd{font:600 12.5px/1 var(--gf-mono);border:1px solid rgba(20,22,24,.18);color:var(--gf-mute);padding:3px 6px;border-radius:6px;flex:none}
+#sidebar.gf #search-results{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;max-height:44vh;overflow:auto;padding:6px;background:#fff;border-radius:14px;box-shadow:0 18px 40px -8px rgba(0,0,0,.35),0 0 0 1px var(--gf-line)}
+#sidebar.gf .search-item{display:flex;align-items:center;gap:10px;padding:9px 10px!important;border-left:0!important;border-radius:10px;font-size:14px;color:var(--gf-ink);white-space:nowrap}
+#sidebar.gf .search-item:hover{background:var(--gf-chip)}
+
+.gf-scroll{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(20,22,24,.3) transparent}
+.gf-scroll>*{flex:none}
+#gf-view{order:1;border-top:0!important;margin-top:0!important}.gf-comm{order:2}#gf-zones{order:3}#gf-colour{order:4}#gf-hubs{order:5}#gf-conn{order:6}#gf-recent{order:7}
+.gf-sec{border-top:1px solid var(--gf-line);margin-top:4px;padding-top:12px}
+.gf-sec .gf-seg{margin:2px 0 8px}.gf-sec .gf-seg button{height:32px;font-size:13px}
+.gf-sec{padding:6px 14px 4px}
+.gf-sec+.gf-sec{border-top:1px solid var(--gf-line);margin-top:4px;padding-top:12px}
+.gf-lab{display:flex;align-items:center;justify-content:space-between;padding:2px 6px 6px;font-size:13px;color:var(--gf-mute);font-weight:500}
+.gf-nav{display:flex;align-items:center;gap:12px;width:100%;height:42px;padding:0 10px;border-radius:14px;color:var(--gf-ink);font-size:14.5px;font-weight:500}
+.gf-nav:hover{background:var(--gf-chip)}
+.gf-nav .gf-l{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-nav.on{background:#fff;box-shadow:0 8px 20px -6px rgba(0,0,0,.18),0 0 0 1px rgba(255,255,255,.9)}
+.gf-nav[disabled]{opacity:.45;cursor:default}
+.gf-nav[disabled]:hover{background:none}
+.gf-nav.off .gf-l{text-decoration:line-through;color:var(--gf-mute)}
+.gf-nav.off .ic{opacity:.45}
+.gf-badge{min-width:24px;padding:2px 8px;border-radius:999px;background:var(--gf-chip);color:var(--gf-mute);font-size:12.5px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums;flex:none}
+.gf-nav.on .gf-badge{background:var(--gf-chip)}
+.gf-recent-empty{padding:4px 10px 8px;font-size:13px;color:var(--gf-mute)}
+.gf-flagsvg{width:20px;height:8px;color:var(--gf-ink)}
+
+/* communities tree */
+.gf-comm{display:flex;flex-direction:column;padding:8px 14px 12px;border-top:1px solid var(--gf-line);margin-top:4px}
+.gf-comm-h{display:flex;align-items:center;justify-content:space-between;padding:2px 6px 8px;font-size:13px;color:var(--gf-mute);font-weight:500}
+#sidebar.gf .gf-sortbtn{display:flex;align-items:center;gap:4px;height:28px;padding:0 10px;border-radius:999px;background:var(--gf-chip);font-size:12.5px;font-weight:600;color:var(--gf-ink)}
+#sidebar.gf .gf-sortbtn:hover{background:rgba(20,22,24,.11)}
+.gf-cfind{height:38px;border-radius:14px;background:var(--gf-chip);box-shadow:inset 0 0 0 1px rgba(20,22,24,.05);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--gf-mute);margin-bottom:8px;flex:none}
+.gf-cfind:focus-within{background:#fff;box-shadow:0 0 0 2px var(--gf-ink)}
+.gf-cfind input{flex:1;min-width:0;height:100%;border:0;background:transparent;font:inherit;font-size:14px;color:var(--gf-ink);outline:none;padding:0}
+.gf-cfind input::placeholder{color:var(--gf-mute);opacity:1}
+.gf-tree{max-height:46vh;overflow:auto;border-radius:14px;background:rgba(255,255,255,.35);box-shadow:inset 0 0 0 1px var(--gf-line);padding:6px;scrollbar-width:thin;scrollbar-color:rgba(20,22,24,.3) transparent}
+.gf-tr{display:flex;align-items:center;border-radius:10px;position:relative}
+#sidebar.gf .gf-tr-main{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:38px;padding:0 6px 0 8px;border-radius:10px}
+.gf-tr:hover{background:var(--gf-chip)}
+.gf-tr.on{background:rgba(20,22,24,.12)}
+.gf-tr.on .gf-name{font-weight:700}
+.gf-tr.dim .gf-name{opacity:.7}
+.gf-fold{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;flex:none}
+.gf-fold i{width:11px;height:11px;border-radius:3px;display:block}
+.gf-name{flex:1;min-width:0;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sidebar.gf .gf-eye{width:32px;height:32px;margin-right:2px;border-radius:10px;display:grid;place-items:center;opacity:.65;flex:none}
+#sidebar.gf .gf-eye .ic{width:17px;height:17px}
+.gf-tr:hover .gf-eye,#sidebar.gf .gf-eye:focus-visible,.gf-tr.off .gf-eye{opacity:1}
+#sidebar.gf .gf-eye:hover{background:var(--gf-chip)}
+#sidebar.gf .gf-eye[aria-disabled="true"]{opacity:.2;cursor:not-allowed}
+.gf-tr.off .gf-name{text-decoration:line-through;color:var(--gf-mute)}
+.gf-group>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;height:38px;padding:0 10px 0 8px;border-radius:10px;font-size:14px;font-weight:600}
+.gf-group>summary::-webkit-details-marker{display:none}
+.gf-group>summary:hover{background:var(--gf-chip)}
+.gf-group>summary .gf-ch{transition:transform .2s var(--gf-ease);color:var(--gf-mute)}
+.gf-group[open]>summary .gf-ch{transform:rotate(90deg)}
+.gf-kids{margin-left:18px;padding-left:8px;border-left:1px solid rgba(20,22,24,.18)}
+.gf-empty{padding:14px 10px;font-size:13.5px;color:var(--gf-mute)}
+#sidebar.gf .gf-empty button{font-weight:600;text-decoration:underline;text-underline-offset:3px;color:var(--gf-ink)}
+
+/* ===== minimised: black rail ===== */
+.gf-rail{display:none;height:100%;width:100%;background:#000;flex-direction:column;align-items:center;gap:6px;padding:14px 0 14px}
+body.gf-min .gf-rail{display:flex}
+#sidebar.gf .gf-rb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none}
+#sidebar.gf .gf-rb:hover{background:rgba(255,255,255,.12)}
+#sidebar.gf .gf-rb.on{background:rgba(255,255,255,.16)}
+#sidebar.gf .gf-rail :focus-visible{outline:2px solid #fff}
+.gf-rail .gf-sp{flex:1}
+.gf-rail .gf-orb{width:30px;height:30px;box-shadow:none;margin-top:4px}
+.gf-rail .gf-orb .ic{width:16px;height:16px}
+
+/* ===== expanded: component-sheet node panel ===== */
+.gf-card{position:fixed;z-index:30;top:20px;bottom:20px;left:calc(var(--gf-sbw) + 24px);width:372px;max-width:calc(100vw - var(--gf-sbw) - 48px);
+  display:flex;flex-direction:column;background:var(--gf-stage);color:var(--gf-ink);border-radius:26px;padding:14px;gap:12px;font:14px/1.35 var(--gf-sans);
+  box-shadow:0 30px 60px -16px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.5) inset}
+.gf-card[hidden]{display:none}
+.gf-card *{box-sizing:border-box}
+.gf-card.pop{animation:gf-pop .3s var(--gf-ease)}
+@keyframes gf-pop{from{opacity:0;transform:translateX(-14px) scale(.985)}to{opacity:1;transform:none}}
+.gf-card button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.gf-card :focus-visible{outline:2px solid var(--gf-ink);outline-offset:2px}
+.gf-card .ic{width:20px;height:20px;display:block;flex:none}
+.gf-c-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gf-pill{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;height:36px;padding:0 14px 0 8px;border-radius:999px;background:#fff;font-size:13.5px;font-weight:500}
+.gf-pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-c-x{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
+.gf-c-x:hover{background:#f3f5f5}
+.gf-c-hero{padding:6px 8px 0}
+.gf-c-num{font-size:78px;line-height:.95;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.gf-c-cap{font-size:13px;color:var(--gf-mute);margin-top:6px}
+.gf-c-name{font-size:19px;font-weight:600;letter-spacing:-.01em;margin-top:14px;overflow-wrap:anywhere}
+.gf-c-src{font:13px/1.35 var(--gf-mono);color:var(--gf-mute);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gf-c-acts{display:flex;flex-direction:column;gap:8px;padding:0 4px}
+.gf-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:999px;font-size:14px;font-weight:600;background:#fff;text-align:center!important}
+.gf-btn:hover{background:#f6f8f8}
+.gf-btn.dark{background:var(--gf-dark);color:#fff}
+.gf-btn.dark:hover{background:#2b3a3a}
+.gf-btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px var(--gf-ink)}
+.gf-btn.line:hover{background:rgba(255,255,255,.5)}
+.gf-seg{display:flex;align-items:center;padding:4px;border-radius:999px;background:#d4dadb}
+.gf-seg button{flex:1;height:36px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--gf-ink);text-align:center!important}
+.gf-seg button[aria-pressed="true"]{background:var(--gf-dark);color:#fff}
+.gf-key{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;padding:0 6px;font-size:13px;color:var(--gf-mute)}
+.gf-key span{display:inline-flex;align-items:center;gap:6px}
+.gf-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:2px 2px 2px 0;scrollbar-width:thin;scrollbar-color:rgba(20,22,24,.3) transparent}
+.gf-pin{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 14px 8px 8px;border-radius:14px;background:#fff}
+.gf-pin:hover{background:#f6f8f8}
+.gf-pin .gf-circ{width:40px;height:40px;border-radius:50%;background:var(--gf-stage);display:grid;place-items:center;flex:none}
+.gf-pin-main{flex:1;min-width:0}
+.gf-pin-label{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-pin-rel{display:block;font-size:13px;color:var(--gf-mute)}
+.gf-flagsvg{width:24px;height:8px;color:var(--gf-ink);flex:none}
+.gf-more{flex:none;height:44px;border-radius:999px;background:#fff;font-size:14px;font-weight:600;text-align:center!important}
+.gf-cempty{padding:18px 12px;font-size:13.5px;color:var(--gf-mute);text-align:center}
+.gf-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* node panel: outgoing and incoming shown together */
+.gf-gh{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:10px 4px 6px;background:var(--gf-stage);font-size:14px;font-weight:700}
+.gf-gi{width:28px;height:28px;border-radius:50%;background:var(--gf-dark);color:#fff;display:grid;place-items:center;flex:none}
+.gf-gi .ic{width:16px;height:16px}
+.gf-gt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.gf-gt small{font-size:13px;font-weight:500;color:var(--gf-mute)}
+.gf-gn{min-width:28px;padding:2px 9px;border-radius:999px;background:#fff;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.gf-gh[data-d="in"] .gf-gi{background:#35c8ff;color:#06303f}
+.gf-gh[data-d="out"] .gf-gi{background:#ffb020;color:#3d2600}
+.gf-pin[data-d="in"] .gf-circ{background:rgba(53,200,255,.28);color:#054a63;box-shadow:inset 0 0 0 2px #35c8ff}
+.gf-pin[data-d="out"] .gf-circ{background:rgba(255,176,32,.30);color:#6b4200;box-shadow:inset 0 0 0 2px #ffb020}
+.gf-pathbar{position:fixed;z-index:35;top:20px;left:calc(var(--gf-sbw) + 24px + (100vw - var(--gf-sbw) - 48px) / 2);transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:var(--gf-dark);color:#fff;font:600 14px var(--gf-sans);box-shadow:0 14px 30px -10px rgba(0,0,0,.7);white-space:nowrap}
+.gf-pathbar[hidden]{display:none}
+.gf-mini{position:fixed;right:24px;bottom:24px;z-index:20;width:220px;height:150px;border-radius:14px;background:rgba(20,22,24,.82);box-shadow:0 0 0 1px rgba(255,255,255,.14),0 14px 30px -10px rgba(0,0,0,.7);overflow:hidden}
+.gf-mini canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+.gf-mini .gf-fit{position:absolute;right:8px;top:8px;height:30px;padding:0 12px;border-radius:999px;background:#fff;color:#1b1e1f;border:0;font:600 13px var(--gf-sans);cursor:pointer}
+.gf-mini .gf-fit:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#sidebar.gf #search-results{display:none!important}
+#gf-results{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;max-height:52vh;overflow:auto;padding:6px;background:#fff;border-radius:14px;box-shadow:0 18px 40px -8px rgba(0,0,0,.35),0 0 0 1px var(--gf-line)}
+#gf-results[hidden]{display:none}
+.gf-chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 4px 8px;position:sticky;top:-6px;background:#fff;z-index:1}
+#sidebar.gf .gf-chips button{height:30px;padding:0 12px;border-radius:999px;background:var(--gf-chip);font-size:13px;font-weight:600}
+#sidebar.gf .gf-chips button[aria-pressed="true"]{background:var(--gf-dark);color:#fff}
+#sidebar.gf .gf-sr-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:10px}
+#sidebar.gf .gf-sr-item:hover,#sidebar.gf .gf-sr-item.cur{background:var(--gf-chip)}
+.gf-sr-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.gf-sr-main b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-sr-main small{font:13px var(--gf-mono);color:var(--gf-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){ .gf-mini{display:none} .gf-pathbar{left:50%;white-space:normal;width:calc(100% - 32px);text-align:center} }
+.gf-hint{padding:2px 10px 0;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.gf-hint-row{display:flex;align-items:center;gap:10px}
+.gf-hint p{margin:2px 0 0;color:var(--gf-mute);font-size:13.5px}
+.gf-dot{width:14px;height:14px;border-radius:50%;flex:none}
+.gf-dot.in{background:#35c8ff}.gf-dot.out{background:#ffb020}
+.gf-zrow{display:flex;align-items:center;gap:8px;padding:3px 2px}
+.gf-zpos{width:70px;font-size:13px;color:var(--gf-mute);flex:none}
+#sidebar.gf .gf-zname{flex:1;min-width:0;height:36px;border:0;border-radius:12px;background:var(--gf-chip);padding:0 12px;font:inherit;font-size:14px;color:var(--gf-ink)}
+#sidebar.gf .gf-zname:focus{background:#fff}
+#sidebar.gf .gf-ztag{display:none}
+body.gf-zoned #sidebar.gf .gf-ztag{display:block;height:26px;margin-right:4px;padding:0 10px;border-radius:999px;background:var(--gf-dark);color:#fff;font-size:13px;font-weight:600;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
+/* readable floor (PRODUCT.md): nothing below 13px; secondary text 13.5px */
+.gf-lab,.gf-comm-h,.gf-who span,.gf-recent-empty,.gf-key,.gf-c-cap,.gf-c-src,.gf-pin-rel,.gf-empty{font-size:13.5px}
+.gf-badge,#sidebar.gf .gf-sortbtn{font-size:13px}
+#sidebar.gf .gf-cfind input:focus-visible,#sidebar.gf #search:focus-visible{outline:none}
+.gf-pin.far{opacity:.82}
+.gf-full,.gf-rail{animation:gf-in .26s var(--gf-ease)}
+@keyframes gf-in{from{opacity:0}to{opacity:1}}
+/* touch: 44px targets, no keyboard hint */
+@media (pointer:coarse){
+  #sidebar.gf .gf-eye{width:44px;height:44px}
+  #sidebar.gf .gf-iconbtn{width:44px;height:44px}
+  #sidebar.gf .gf-sortbtn{height:40px}
+  #sidebar.gf .gf-tr-main,.gf-group>summary{height:44px}
+  #sidebar.gf .gf-nav{height:44px}
+  .gf-kbd{display:none}
+}
+
+/* phone: sidebar becomes the lower sheet; rail becomes a bottom bar */
+@media (max-width:760px){
+  body{flex-direction:column}
+  #graph{order:1;margin:10px 10px 0;border-radius:22px;flex:1 1 auto;min-height:0}
+  #sidebar.gf{order:2;flex:0 0 54vh;width:100%;height:54vh}
+  body.gf-min #sidebar.gf{flex:0 0 64px;height:64px;width:100%}
+  body.gf-min #graph{margin:0;border-radius:0 0 22px 22px}
+  .gf-scroll{overflow-y:auto;scrollbar-width:thin}
+  .gf-scroll>*{flex:none}
+  .gf-comm{order:-1;border-top:0;margin-top:0}
+  .gf-tree{overflow:visible;flex:none;max-height:none}
+  .gf-rail{flex-direction:row;padding:0 8px;justify-content:space-around;align-items:center}
+  .gf-rail .gf-sp{display:none}
+  #sidebar.gf .gf-rb{width:44px;height:44px}
+  .gf-card{left:10px;right:10px;top:auto;bottom:10px;width:auto;max-width:none;height:72vh}
+}
+@media (prefers-reduced-motion:reduce){ .gf-card.pop,.gf-full,.gf-rail{animation:none} .gf-group>summary .gf-ch{transition:none} }
+</style>
+<script id="gf-theme-js">
+(function(){
+  if (window.__gfTheme) return; window.__gfTheme = true;
+  if (typeof RAW_NODES === 'undefined' || typeof LEGEND === 'undefined' || typeof nodesDS === 'undefined') return;
+  // graphify only writes a legend when communities were labelled; without one, build it from the nodes
+  if (!LEGEND.length) {
+    const g = new Map();
+    RAW_NODES.forEach(n => { const a = g.get(n.community) || {cid: n.community, color: (n.color && n.color.background) || '#888', label: n.community_name || ('Community ' + n.community), count: 0}; a.count++; g.set(n.community, a); });
+    Array.from(g.values()).sort((a, b) => b.count - a.count).forEach(c => LEGEND.push({cid: c.cid, color: c.color, label: E0(c.label), count: c.count}));
+  }
+
+  const E0 = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dec = s => new DOMParser().parseFromString(s, 'text/html').documentElement.textContent;
+  const P = {
+    graph:'<circle cx="5" cy="15" r="2"/><circle cx="15" cy="15" r="2"/><circle cx="10" cy="4.5" r="2"/><path d="M6 13.3 9 6.2M14 13.3 11 6.2M7.2 15h5.6"/>',
+    search:'<circle cx="9" cy="9" r="5.6"/><path d="M13.2 13.2 17 17"/>',
+    panel:'<rect x="2.5" y="3.5" width="15" height="13" rx="3.2"/><path d="M7.6 3.5v13"/>',
+    grid:'<rect x="3" y="3" width="5.6" height="5.6" rx="1.6"/><rect x="11.4" y="3" width="5.6" height="5.6" rx="1.6"/><rect x="3" y="11.4" width="5.6" height="5.6" rx="1.6"/><rect x="11.4" y="11.4" width="5.6" height="5.6" rx="1.6"/>',
+    target:'<circle cx="10" cy="10" r="6.5"/><circle cx="10" cy="10" r="1.6" fill="currentColor"/>',
+    eye:'<path d="M1.8 10S5 4.6 10 4.6 18.2 10 18.2 10 15 15.4 10 15.4 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.3"/>',
+    eyeoff:'<path d="M1.8 10S5 4.6 10 4.6 18.2 10 18.2 10 15 15.4 10 15.4 1.8 10 1.8 10z"/><path d="M3 17 17 3"/>',
+    clock:'<circle cx="10" cy="10" r="7"/><path d="M10 5.8V10l2.8 1.8"/>',
+    chev:'<path d="M7.5 4.5 13 10l-5.5 5.5"/>', down:'<path d="M5 8l5 5 5-5"/>',
+    close:'<path d="M5 5l10 10M15 5 5 15"/>', left:'<path d="M16 10H4.5M9 5.5 4.5 10 9 14.5"/>',
+    out:'<path d="M4.5 10h11M11 5.5 15.5 10 11 14.5"/>', in_:'<path d="M15.5 10h-11M9 5.5 4.5 10 9 14.5"/>',
+    folder:'<path d="M2.8 6.2c0-1 .8-1.7 1.7-1.7h3l1.6 1.8h6.4c.9 0 1.7.8 1.7 1.7v6c0 .9-.8 1.7-1.7 1.7H4.5c-.9 0-1.7-.8-1.7-1.7z"/>',
+    copy:'<rect x="7" y="7" width="9.5" height="9.5" rx="2.4"/><path d="M13 7V5.4c0-.9-.7-1.6-1.6-1.6H5.4c-.9 0-1.6.7-1.6 1.6v6c0 .9.7 1.6 1.6 1.6H7"/>',
+    link:'<path d="M8.2 11.8 11.8 8.2M7.4 13.4 6 14.8a3 3 0 0 1-4.2-4.2L3.3 9m9.3-2.4L14 5.2a3 3 0 0 1 4.2 4.2l-1.5 1.5"/>'
+  };
+  const ic = (n, w) => '<svg class="ic" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="' + (w || 1.6) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[n] + '</svg>';
+  const flag = c => '<svg class="gf-flagsvg" viewBox="0 0 24 8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"' +
+    (c === 'EXTRACTED' ? '' : c === 'INFERRED' ? ' stroke-dasharray="5 3.5"' : ' stroke-dasharray="0.1 4.2"') + '/></svg>';
+  const CONF = [['EXTRACTED', 'Found in source'], ['INFERRED', 'Inferred'], ['AMBIGUOUS', 'Ambiguous']];
+
+  const sb = $('#sidebar'), graphEl = $('#graph'), search = $('#search'), results = $('#search-results'), info = $('#info-content');
+  const total = RAW_NODES.length, hasEdges = typeof RAW_EDGES !== 'undefined' && typeof edgesDS !== 'undefined', nEdges = hasEdges ? RAW_EDGES.length : 0;
+  const byCid = new Map(LEGEND.map(c => [c.cid, c]));
+  const FL = new Map(RAW_NODES.map(n => [n.id, n.label]));          // full labels (the canvas shows shortened ones)
+  const short = s => (s.length > 26 ? s.slice(0, 25) + '…' : s);
+  // name the unnamed communities after their biggest hub, so no row or pill says only "Community 22"
+  (function autoName() {
+    const by = new Map(); RAW_NODES.forEach(n => { if (!by.has(n.community)) by.set(n.community, []); by.get(n.community).push(n); });
+    LEGEND.forEach(c => {
+      if (!/^Community \d+$/.test(dec(c.label))) return;
+      const ms = by.get(c.cid) || [], top = ms.slice().sort((a, b) => (b.degree || 0) - (a.degree || 0))[0];
+      if (!top) return;
+      c.label = E(top.label); c.auto = true;
+      nodesDS.update(ms.map(n => ({id: n.id, _community_name: top.label})));
+    });
+  })();
+  const isNamed = c => !c.auto && !/^Community \d+$/.test(dec(c.label));
+  const confCount = {}; if (hasEdges) RAW_EDGES.forEach(e => { const k = e.confidence || 'EXTRACTED'; confCount[k] = (confCount[k] || 0) + 1; });
+
+  /* ---------- shell ---------- */
+  sb.innerHTML = ''; sb.classList.add('gf');
+  sb.innerHTML =
+    '<div class="gf-full">' +
+      '<div class="gf-top"><div class="gf-orb">' + ic('graph', 1.7) + '</div><div class="gf-who"><b id="gf-title"></b><span id="gf-sub"></span></div>' +
+        '<button type="button" class="gf-iconbtn" id="gf-min" aria-label="Minimise sidebar" title="Minimise sidebar">' + ic('panel') + '</button></div>' +
+      '<div class="gf-find" id="gf-find">' + ic('search') + '<span class="gf-kbd" aria-hidden="true">/</span></div>' +
+      '<div class="gf-scroll">' +
+        '<div class="gf-sec" id="gf-view"><div class="gf-lab">View</div>' +
+          '<button type="button" class="gf-nav" id="gf-nav-all">' + ic('grid') + '<span class="gf-l">All communities</span><span class="gf-badge" id="gf-b-all"></span></button>' +
+          '<button type="button" class="gf-nav" id="gf-nav-iso">' + ic('target') + '<span class="gf-l" id="gf-l-iso">Isolated</span><span class="gf-badge" id="gf-b-iso"></span></button>' +
+          '<button type="button" class="gf-nav" id="gf-nav-hid">' + ic('eyeoff') + '<span class="gf-l">Hidden</span><span class="gf-badge" id="gf-b-hid"></span></button></div>' +
+        '<div class="gf-sec" id="gf-zones"><div class="gf-lab">Zones</div>' +
+          '<button type="button" class="gf-nav" id="gf-zonetoggle" aria-pressed="false">' + ic('grid') + '<span class="gf-l">Arrange by zone</span><span class="gf-badge">off</span></button>' +
+          '<div id="gf-zonelist"></div><div class="gf-recent-empty" id="gf-zonehint">Sorts the graph into labelled areas by file path. Rename any zone; click a community\u2019s zone tag to move it.</div></div>' +
+        '<div class="gf-sec" id="gf-colour"><div class="gf-lab">Colour &amp; shape</div>' +
+          '<div class="gf-seg" role="group" aria-label="Colour by">' + [['community', 'Community'], ['type', 'Type'], ['folder', 'Folder']].map(m => '<button type="button" data-cm="' + m[0] + '" aria-pressed="' + (m[0] === 'community') + '">' + m[1] + '</button>').join('') + '</div>' +
+          '<button type="button" class="gf-nav" id="gf-shapes" aria-pressed="false">' + ic('grid') + '<span class="gf-l">Shape by type</span><span class="gf-badge">off</span></button>' +
+          '<div id="gf-cats"></div></div>' +
+        '<div class="gf-sec" id="gf-hubs"><div class="gf-lab">Hubs</div><div id="gf-hubs-list"></div></div>' +
+        '<div class="gf-sec" id="gf-conn"><div class="gf-lab">Connections</div>' +
+          CONF.map(c => '<button type="button" class="gf-nav" data-conf="' + c[0] + '" aria-pressed="true">' + flag(c[0]) + '<span class="gf-l">' + c[1] + '</span><span class="gf-badge">' + (confCount[c[0]] || 0).toLocaleString() + '</span></button>').join('') + '</div>' +
+        '<div class="gf-sec" id="gf-recent"><div class="gf-lab">Recent</div><div id="gf-recent-list"></div></div>' +
+        '<div class="gf-comm" id="gf-commsec"><div class="gf-comm-h"><span>Communities</span><button type="button" class="gf-sortbtn" id="gf-sort" aria-label="Sort communities: Biggest">' + '<span id="gf-sort-l">Biggest</span>' + ic('down') + '</button></div>' +
+          '<div class="gf-cfind">' + ic('search') + '<input id="gf-filter" type="search" placeholder="Search communities" aria-label="Search communities" autocomplete="off"></div>' +
+          '<div class="gf-tree" id="gf-tree"></div></div>' +
+      '</div></div>' +
+    '<nav class="gf-rail" aria-label="Sidebar (minimised)">' +
+      '<button type="button" class="gf-rb" data-r="open" aria-label="Expand sidebar" title="Expand sidebar">' + ic('graph', 1.7) + '</button>' +
+      '<button type="button" class="gf-rb on" data-r="view" aria-label="View" title="View">' + ic('grid') + '</button>' +
+      '<button type="button" class="gf-rb" data-r="find" aria-label="Find a node" title="Find a node">' + ic('search') + '</button>' +
+      '<button type="button" class="gf-rb" data-r="comm" aria-label="Communities" title="Communities">' + ic('folder') + '</button>' +
+      '<button type="button" class="gf-rb" data-r="conn" aria-label="Connections" title="Connections">' + ic('link') + '</button>' +
+      '<button type="button" class="gf-rb" data-r="recent" aria-label="Recent nodes" title="Recent nodes">' + ic('clock') + '</button>' +
+      '<span class="gf-sp"></span>' +
+      '<button type="button" class="gf-rb" data-r="open" aria-label="Expand sidebar" title="Expand sidebar">' + ic('panel') + '</button>' +
+      '<span class="gf-orb">' + ic('graph', 1.7) + '</span></nav>' +
+    '<div class="gf-sr" id="gf-sr" aria-live="polite"></div>';
+  const find = $('#gf-find'); find.insertBefore(search, $('.gf-kbd', find)); find.appendChild(results); search.placeholder = 'Find a node'; search.setAttribute('aria-label', 'Find a node');
+  info.hidden = true; sb.appendChild(info);
+  const card = document.createElement('section'); card.className = 'gf-card'; card.hidden = true; card.setAttribute('aria-label', 'Node details'); document.body.appendChild(card);
+  new MutationObserver(() => results.querySelectorAll('.search-item:not([data-gf])').forEach(el => {
+    el.dataset.gf = 1; const col = el.style.borderLeftColor; el.style.borderLeft = '0';
+    el.insertAdjacentHTML('afterbegin', '<span class="gf-fold"><i style="background:' + E(col) + ';width:12px;height:12px;border-radius:3px;display:block"></i></span>');
+  })).observe(results, {childList: true});
+
+  /* ---------- canvas follows the layout ---------- */
+  let raf = 0;
+  const resize = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { try { network.setSize('100%', '100%'); network.redraw(); } catch (e) {} }); };
+  try { new ResizeObserver(resize).observe(graphEl); } catch (e) {}
+
+  /* ---------- minimise / expand ---------- */
+  function setMin(v, persist) {
+    document.body.classList.toggle('gf-min', v);
+    if (persist !== false) try { localStorage.setItem('gf-min', v ? '1' : '0'); } catch (e) {}
+    resize();
+  }
+  try { if (localStorage.getItem('gf-min') === '1') setMin(true, false); } catch (e) {}
+  $('#gf-min').addEventListener('click', () => setMin(true));
+  $$('.gf-rb').forEach(b => b.addEventListener('click', () => {
+    const r = b.dataset.r; setMin(false);
+    requestAnimationFrame(() => {
+      if (r === 'find') search.focus();
+      else if (r === 'comm') { $('#gf-filter').focus(); }
+      else if (r === 'conn') $('#gf-conn').scrollIntoView({block: 'nearest'});
+      else if (r === 'recent') $('#gf-recent').scrollIntoView({block: 'nearest'});
+    });
+  }));
+
+  /* ---------- visibility: isolate / hide communities, hide edge kinds ---------- */
+  let solo = null, sort = 'size', q = '', catSolo = null;
+  const hidden = (typeof hiddenCommunities !== 'undefined') ? hiddenCommunities : new Set();
+  const hiddenConf = new Set();
+  // hyperedge hulls are drawn from positions of every member, hidden or not: keep only hulls whose members are all in view
+  const HE = (typeof hyperedges !== 'undefined') ? hyperedges.slice() : null;
+  const commOf = new Map(RAW_NODES.map(n => [n.id, n.community]));
+  const vis = id => { const c = commOf.get(id); const base = c === undefined ? true : (solo !== null ? c === solo : !hidden.has(c)); return base && (catSolo === null || catKeyFor(catSolo.mode, id) === catSolo.key); };
+  function syncHulls() { if (!HE) return; hyperedges.length = 0; HE.filter(h => h.nodes.every(vis)).forEach(h => hyperedges.push(h)); try { network.redraw(); } catch (e) {} }
+  function fit(ids) { try { network.fit({nodes: ids, animation: {duration: 450, easingFunction: 'easeOutQuart'}}); } catch (e) {} }
+  function apply(refit) {
+    nodesDS.update(RAW_NODES.map(n => ({id: n.id, hidden: !vis(n.id)})));
+    if (refit) fit((solo !== null || catSolo !== null) ? RAW_NODES.filter(n => vis(n.id)).map(n => n.id) : undefined);
+    syncHulls(); calcCents(); labelPass(true);
+    paint();
+  }
+  function applyConf() {
+    if (!hasEdges) return;
+    edgesDS.update(RAW_EDGES.map((e, i) => ({id: i, hidden: hiddenConf.has(e.confidence || 'EXTRACTED')})));
+    paint();
+  }
+  const shownCount = () => RAW_NODES.reduce((a, n) => a + (vis(n.id) ? 1 : 0), 0);
+  function paint() {
+    const shown = shownCount(), t = $('#gf-title'), s = $('#gf-sub');
+    t.textContent = catSolo !== null ? catName() : solo !== null ? dec(byCid.get(solo).label) : (shown === total ? total.toLocaleString() + ' nodes' : shown.toLocaleString() + ' nodes shown');
+    s.textContent = (solo !== null || catSolo !== null) ? shown.toLocaleString() + ' of ' + total.toLocaleString() + ' nodes' : nEdges.toLocaleString() + ' links · ' + LEGEND.length + ' communities';
+    const none = solo === null && catSolo === null && !hidden.size;
+    $('#gf-nav-all').classList.toggle('on', none); $('#gf-b-all').textContent = LEGEND.length;
+    const iso = $('#gf-nav-iso'); iso.classList.toggle('on', solo !== null); iso.disabled = solo === null; iso.setAttribute('aria-pressed', solo !== null);
+    $('#gf-l-iso').textContent = solo !== null ? dec(byCid.get(solo).label) : 'Isolated'; $('#gf-b-iso').textContent = solo !== null ? shown.toLocaleString() : '–';
+    const hid = $('#gf-nav-hid'); hid.disabled = hidden.size === 0; hid.classList.toggle('on', hidden.size > 0 && solo === null); $('#gf-b-hid').textContent = hidden.size || '–';
+    $$('#gf-conn .gf-nav').forEach(b => { const off = hiddenConf.has(b.dataset.conf); b.classList.toggle('off', off); b.setAttribute('aria-pressed', !off); });
+    $$('.gf-tr').forEach(el => {
+      const cid = +el.dataset.cid, on = solo === cid, off = solo === null && hidden.has(cid);
+      el.classList.toggle('on', on); el.classList.toggle('off', off); el.classList.toggle('dim', solo !== null && !on);
+      const m = $('.gf-tr-main', el), e = $('.gf-eye', el);
+      m.setAttribute('aria-pressed', on); e.setAttribute('aria-disabled', solo !== null);
+      e.innerHTML = ic(off ? 'eyeoff' : 'eye'); e.setAttribute('aria-label', (off ? 'Show ' : 'Hide ') + dec(byCid.get(cid).label));
+    });
+    $$('.gf-rb[data-r="view"]').forEach(b => b.classList.toggle('on', !none)); paintCats(); paintZones();
+    $('#gf-nav-all').setAttribute('aria-current', none ? 'true' : 'false'); hid.title = 'Show all hidden communities';
+  }
+  const toggleSolo = cid => { solo = (solo === cid) ? null : cid; apply(true); if (curId !== null) renderCard(false); };
+  $('#gf-nav-all').addEventListener('click', () => { solo = null; catSolo = null; hidden.clear(); cmode = 'community'; shapes = false; applyColour(); applyShapes(); apply(true); });
+  $('#gf-nav-iso').addEventListener('click', () => { solo = null; catSolo = null; apply(true); });
+  $('#gf-nav-hid').addEventListener('click', () => { hidden.clear(); apply(false); });
+  $$('#gf-conn .gf-nav').forEach(b => b.addEventListener('click', () => { const k = b.dataset.conf; hiddenConf.has(k) ? hiddenConf.delete(k) : hiddenConf.add(k); applyConf(); }));
+
+  /* ---------- communities tree ---------- */
+  function row(c) {
+    const li = document.createElement('div'); li.className = 'gf-tr'; li.dataset.cid = c.cid;
+    const name = dec(c.label);
+    li.innerHTML = '<button type="button" class="gf-tr-main" title="Show only ' + E(name) + '"><span class="gf-fold"><i style="background:' + E(c.color) + '"></i></span><span class="gf-name">' + E(name) + '</span><span class="gf-badge">' + c.count.toLocaleString() + '</span></button><button type="button" class="gf-ztag" data-zc="' + c.cid + '" title="Move to the next zone"></button><button type="button" class="gf-eye"></button>';
+    $('.gf-tr-main', li).addEventListener('click', () => toggleSolo(c.cid));
+    $('.gf-eye', li).addEventListener('click', () => { if (solo !== null) return; hidden.has(c.cid) ? hidden.delete(c.cid) : hidden.add(c.cid); apply(false); });
+    return li;
+  }
+  function build() {
+    const tree = $('#gf-tree'), open = tree.querySelector('.gf-group[open]') !== null || q !== '';
+    const cmp = sort === 'size' ? (a, b) => b.count - a.count || a.cid - b.cid : (a, b) => dec(a.label).localeCompare(dec(b.label));
+    const match = c => !q || dec(c.label).toLowerCase().includes(q);
+    const named = LEGEND.filter(c => isNamed(c) && match(c)).sort(cmp), tail = LEGEND.filter(c => !isNamed(c) && match(c)).sort(cmp);
+    tree.innerHTML = '';
+    named.forEach(c => tree.appendChild(row(c)));
+    if (tail.length) {
+      const d = document.createElement('details'); d.className = 'gf-group'; d.open = open;
+      d.innerHTML = '<summary><span class="gf-ch">' + ic('chev') + '</span><span class="gf-name">Auto-named</span><span class="gf-badge">' + tail.length + '</span></summary><div class="gf-kids"></div>';
+      tail.forEach(c => $('.gf-kids', d).appendChild(row(c))); tree.appendChild(d);
+    }
+    if (!named.length && !tail.length) {
+      tree.innerHTML = '<div class="gf-empty">No community matches “' + E(q) + '”. <button type="button" id="gf-clr">Clear</button></div>';
+      $('#gf-clr').onclick = () => { $('#gf-filter').value = ''; q = ''; build(); };
+    }
+    paint();
+  }
+  $('#gf-filter').addEventListener('input', e => { q = e.target.value.toLowerCase().trim(); build(); });
+  $('#gf-filter').addEventListener('keydown', e => { if (e.key === 'Escape') { e.target.value = ''; q = ''; build(); } });
+  $('#gf-sort').addEventListener('click', () => { sort = sort === 'size' ? 'name' : 'size'; $('#gf-sort-l').textContent = sort === 'size' ? 'Biggest' : 'A–Z'; $('#gf-sort').setAttribute('aria-label', 'Sort communities: ' + (sort === 'size' ? 'Biggest' : 'A to Z')); build(); });
+
+  /* ---------- recents ---------- */
+  const recents = [];
+  function paintRecents() {
+    const box = $('#gf-recent-list');
+    if (!recents.length) { box.innerHTML = '<div class="gf-recent-empty">Nodes you open appear here.</div>'; return; }
+    box.innerHTML = recents.map(id => { const n = nodesDS.get(id); return n ? '<button type="button" class="gf-nav" data-nid="' + E(id) + '">' + ic('clock') + '<span class="gf-l">' + E(FL.get(id) || n.label) + '</span><span class="gf-badge">' + (n._degree || 0) + '</span></button>' : ''; }).join('');
+  }
+  $('#gf-recent-list').addEventListener('click', e => { const b = e.target.closest('[data-nid]'); if (b) focusNode(b.dataset.nid); });
+
+  /* ---------- expanded node panel ---------- */
+  let curId = null, mode = 'all', showAll = false, inspecting = false;
+  const RANK = {EXTRACTED: 0, INFERRED: 1, AMBIGUOUS: 2};
+  function pinsOf(id) {
+    const out = [];
+    if (hasEdges) network.getConnectedEdges(id).forEach(eid => {
+      const e = RAW_EDGES[eid]; if (!e || e.from === e.to) return;
+      const o = e.from === id, oid = o ? e.to : e.from, nb = nodesDS.get(oid);
+      out.push({oid, out: o, rel: e.label || 'linked', conf: e.confidence || 'EXTRACTED', label: FL.get(oid) || String(oid)});
+    });
+    return out.sort((a, b) => (RANK[a.conf] - RANK[b.conf]) || a.label.localeCompare(b.label));
+  }
+  function renderCard(open) {
+    const n = nodesDS.get(curId); if (!n) return hideCard();
+    const c = byCid.get(n._community), col = (n.color && n.color.background) || '#888';
+    const all = pinsOf(curId), nOut = all.filter(p => p.out).length, nIn = all.length - nOut;
+    const list = all.filter(p => mode === 'all' || (mode === 'out' ? p.out : !p.out)), lim = showAll ? list.length : 30;
+    const src = String(n._source_file || '').split(/[\\/]/).filter(Boolean), isolated = c && solo === c.cid;
+    const per = showAll ? 1e9 : 15;
+    const pinHTML = p => '<button type="button" class="gf-pin' + (vis(p.oid) ? '' : ' far') + '" data-d="' + (p.out ? 'out' : 'in') + '" data-nid="' + E(p.oid) + '"' + (vis(p.oid) ? '' : ' title="Hidden by your current view; opening it restores the view"') + '><span class="gf-circ">' + ic(p.out ? 'out' : 'in_') + '</span><span class="gf-pin-main"><span class="gf-pin-label">' + E(p.label) + '</span><span class="gf-pin-rel">' + E(p.rel) + (p.out ? '' : ' this node') + (vis(p.oid) ? '' : ' \u00b7 outside this view') + '</span></span>' + flag(p.conf) + '</button>';
+    const group = (d, title, sub, arr, ico) => arr.length ? '<div class="gf-gh" data-d="' + d + '"><span class="gf-gi">' + ic(ico) + '</span><span class="gf-gt">' + title + '<small>' + sub + '</small></span><span class="gf-gn">' + arr.length + '</span></div>' + arr.slice(0, per).map(pinHTML).join('') : '';
+    const enters = list.filter(p => !p.out), exits = list.filter(p => p.out);
+    const listHTML = list.length ? group('in', 'Enter', 'edges arriving at this node', enters, 'in_') + group('out', 'Exit', 'edges leaving this node', exits, 'out') + ((enters.length > per || exits.length > per) ? '<button type="button" class="gf-more" data-act="more">Show all ' + list.length + '</button>' : '') : '<div class="gf-cempty">No connections in this direction.</div>';
+    const hintHTML = '<div class="gf-hint"><div class="gf-hint-row"><span class="gf-dot in"></span><b>' + nIn + '</b> arrive here</div><div class="gf-hint-row"><span class="gf-dot out"></span><b>' + nOut + '</b> leave from here</div><p>Press <b>Inspect connections</b> to highlight them on the graph and list every one.</p></div>';
+    card.innerHTML =
+      '<div class="gf-c-top"><span class="gf-pill"><span class="gf-fold"><i style="background:' + E(col) + '"></i></span><span>' + E(n._community_name || 'Community') + (n._file_type ? ' · ' + E(n._file_type) : '') + '</span></span>' +
+        '<button type="button" class="gf-c-x" data-act="close" aria-label="Close details">' + ic('close', 1.8) + '</button></div>' +
+      '<div class="gf-c-hero"><div class="gf-c-num">' + (n._degree || 0) + '</div><div class="gf-c-cap">connections</div>' +
+        '<div class="gf-c-name">' + E(FL.get(curId) || n.label) + '</div>' + (src.length ? '<div class="gf-c-src" title="' + E(src.join('/')) + '">' + E(src.length > 3 ? '…/' + src.slice(-3).join('/') : src.join('/')) + '</div>' : '') + '</div>' +
+      '<div class="gf-c-acts"><button type="button" class="gf-btn dark" data-act="inspect" aria-pressed="' + inspecting + '">' + ic('eye') + '<span>' + (inspecting ? 'Stop inspecting' : 'Inspect connections') + '</span></button>' + (c ? '<button type="button" class="gf-btn" data-act="iso">' + ic('target') + '<span>' + (isolated ? 'Showing this community' : 'Show only this community') + '</span></button>' : '') +
+        (src.length ? '<button type="button" class="gf-btn line" data-act="copy">' + ic('copy') + '<span>Copy source path</span></button>' : '') + '<button type="button" class="gf-btn line" data-act="path">' + ic('link') + '<span>Trace path from here</span></button></div>' +
+      (inspecting ? '<div class="gf-seg" role="group" aria-label="Direction">' + [['all', 'All ' + all.length], ['in', 'Enter ' + nIn], ['out', 'Exit ' + nOut]].map(m => '<button type="button" data-mode="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + m[1] + '</button>').join('') + '</div>' + '<div class="gf-key">' + CONF.map(k => '<span>' + flag(k[0]) + k[1].toLowerCase() + '</span>').join('') + '</div>' + '<div class="gf-list">' + listHTML + '</div>' : hintHTML);
+    const wasHidden = card.hidden; card.hidden = false;
+    if (open && wasHidden) { card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
+  }
+  let prevFocus = null;
+  function hideCard() {
+    card.hidden = true; curId = null; info.innerHTML = ''; inspecting = false; clearHighlight(); pathFrom = null; pathRes = null; const pbx = document.getElementById('gf-pathbar'); if (pbx) pbx.hidden = true;
+    try { if (prevFocus && document.contains(prevFocus) && prevFocus !== document.body) prevFocus.focus(); } catch (e) {} prevFocus = null;
+  }
+  function showNode(id) {
+    const n = nodesDS.get(id); if (!n) return;
+    if (pathFrom !== null && id !== pathFrom) return showPath(pathFrom, id);
+    pathRes = null;
+    if (card.hidden) prevFocus = document.activeElement;
+    if (curId !== id) { mode = 'all'; showAll = false; }
+    curId = id; info.innerHTML = '<span data-gf></span>';
+    const i = recents.indexOf(id); if (i >= 0) recents.splice(i, 1); recents.unshift(id); recents.length = Math.min(recents.length, 5); paintRecents();
+    $('#gf-sr').textContent = 'Selected ' + (FL.get(id) || n.label) + ', ' + (n._degree || 0) + ' connections';
+    inspecting = false; clearHighlight(); renderCard(true);
+  }
+  window.showInfo = showNode;
+  card.addEventListener('click', e => {
+    const pin = e.target.closest('.gf-pin'), act = e.target.closest('[data-act]'), m = e.target.closest('[data-mode]');
+    if (pin) { if (pin.classList.contains('far')) { solo = null; hidden.delete(commOf.get(pin.dataset.nid)); apply(false); } return focusNode(pin.dataset.nid); }
+    if (m) { mode = m.dataset.mode; showAll = false; renderCard(false); if (inspecting) highlight(curId); return; }
+    if (!act) return;
+    const a = act.dataset.act, n = nodesDS.get(curId);
+    if (a === 'close') { hideCard(); try { network.unselectAll(); } catch (x) {} }
+    else if (a === 'iso' && n) toggleSolo(n._community);
+    else if (a === 'more') { showAll = true; renderCard(false); }
+    else if (a === 'inspect') { inspecting = !inspecting; if (inspecting) highlight(curId); else clearHighlight(); renderCard(false); }
+    else if (a === 'path') { pathFrom = curId; $('#gf-pathbar').hidden = false; }
+    else if (a === 'clearpath') { pathRes = null; const d = curId; clearHighlight(); showNode(d); }
+    else if (a === 'copy' && n) { try { navigator.clipboard.writeText(String(n._source_file || '')); const s = $('span', act); s.textContent = 'Copied'; setTimeout(() => { s.textContent = 'Copy source path'; }, 1400); } catch (x) {} }
+  });
+  // the page's own "nothing selected" handler writes .empty markup into #info-content: treat it as close
+  new MutationObserver(() => { if (info.querySelector('.empty')) hideCard(); }).observe(info, {childList: true});
+
+  document.addEventListener('keydown', e => {
+    const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+    if (e.key === '/' && !typing) { e.preventDefault(); setMin(false); search.focus(); }
+    if (e.key === 'Escape' && pathFrom !== null) { pathFrom = null; $('#gf-pathbar').hidden = true; return; }
+    if (e.key === 'Escape' && !typing) { if (!card.hidden) { hideCard(); try { network.unselectAll(); } catch (x) {} } else if (solo !== null || catSolo !== null) { solo = null; catSolo = null; apply(true); } }
+  });
+
+  /* ---------- identify on the canvas: community name pills + zoom-aware node labels ---------- */
+  const maxDeg = Math.max.apply(null, RAW_NODES.map(n => n.degree || 0).concat([1]));
+  let cents = [], lastT = -1, zt = 0, posCache = {};
+  const C_IN = '#35c8ff', C_OUT = '#ffb020';   // enter (arriving) / exit (leaving)
+  const rgba = (hex, a) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 'rgba(136,136,136,' + a + ')'; const v = parseInt(m[1], 16); return 'rgba(' + (v >> 16) + ',' + ((v >> 8) & 255) + ',' + (v & 255) + ',' + a + ')'; };
+  const baseColor = new Map(RAW_NODES.map(n => [n.id, n.color]));
+  const hubSet = new Set(RAW_NODES.slice().sort((a, b) => (b.degree || 0) - (a.degree || 0)).slice(0, 10).map(n => n.id));
+  let hlId = null, hlSet = new Set();
+  // spotlight one node: arriving edges blue, leaving edges amber, matching rings on the neighbours, everything else ghosted
+  function highlight(id) {
+    hlId = id; hlSet = new Set([id]);
+    const inN = new Set(), outN = new Set(), inE = new Set(), outE = new Set();
+    network.getConnectedEdges(id).forEach(eid => { const e = RAW_EDGES[eid]; if (!e || e.from === e.to) return; if (e.to === id) { if (mode !== 'out') { inE.add(eid); inN.add(e.from); } } else if (mode !== 'in') { outE.add(eid); outN.add(e.to); } });
+    inN.forEach(x => hlSet.add(x)); outN.forEach(x => hlSet.add(x));
+    const ec = c => ({color: c, highlight: c, hover: c, opacity: 1, inherit: false});
+    edgesDS.update(RAW_EDGES.map((e, i) => inE.has(i) ? {id: i, width: 3.5, color: ec(C_IN)} : outE.has(i) ? {id: i, width: 3.5, color: ec(C_OUT)} : {id: i, width: 1, color: {opacity: .04}}));
+    nodesDS.update(RAW_NODES.map(n => {
+      const bc = baseColor.get(n.id) || n.color, bg = (bc && bc.background) || '#888';
+      if (n.id === id) return {id: n.id, borderWidth: 4, color: {background: bg, border: '#ffffff', highlight: {background: '#ffffff', border: '#ffffff'}}};
+      const ring = inN.has(n.id) ? C_IN : outN.has(n.id) ? C_OUT : null;
+      if (ring) return {id: n.id, borderWidth: 4, color: {background: bg, border: ring, highlight: {background: '#ffffff', border: ring}}};
+      const d = rgba(bg, .12); return {id: n.id, borderWidth: 1.5, color: {background: d, border: d, highlight: {background: d, border: d}}};
+    }));
+    labelPass(true);
+  }
+  function clearHighlight() {
+    if (hlId === null) return; hlId = null; hlSet = new Set();
+    edgesDS.update(RAW_EDGES.map((e, i) => ({id: i, width: e.width, color: e.color})));
+    nodesDS.update(RAW_NODES.map(n => ({id: n.id, borderWidth: 1.5, color: baseColor.get(n.id) || n.color})));
+    labelPass(true);
+  }
+  function calcCents() {
+    const pos = posCache = network.getPositions(), acc = new Map();
+    RAW_NODES.forEach(n => { if (!vis(n.id)) return; const p = pos[n.id]; if (!p) return; const a = acc.get(n.community) || {x: 0, y: 0, n: 0}; a.x += p.x; a.y += p.y; a.n++; acc.set(n.community, a); });
+    cents = Array.from(acc).filter(([cid]) => byCid.has(cid)).map(([cid, a]) => ({cid, x: a.x / a.n, y: a.y / a.n, n: a.n, name: dec(byCid.get(cid).label)})).sort((a, b) => b.n - a.n);
+  }
+  function labelPass(force) {
+    const s = network.getScale(), small = solo !== null || shownCount() <= 400;
+    const T = s >= 1.5 ? 0 : s >= 0.8 ? 3 : s >= 0.45 ? (small ? 1 : 8) : (small ? 3 : Math.ceil(maxDeg * 0.15));
+    if (!force && T === lastT) return; lastT = T;
+    nodesDS.update(RAW_NODES.map(n => ({id: n.id, label: short(n.label), font: {size: (hlId !== null ? hlSet.has(n.id) : ((n.degree || 0) >= T || hubSet.has(n.id))) ? 12 : 0, color: '#ffffff', strokeWidth: 3, strokeColor: '#0d0d0c'}})));
+  }
+  network.on('afterDrawing', ctx => {
+    if (!cents.length) return;
+    const s = network.getScale(), keep = solo !== null ? 1 : s < 0.3 ? 12 : s < 0.55 ? 28 : s < 1 ? 70 : cents.length;
+    const fs = 13 / s, pad = 7 / s, drawn = [];
+    ctx.save(); ctx.font = '600 ' + fs + 'px ' + getComputedStyle(document.body).fontFamily; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    for (let i = 0; i < Math.min(keep, cents.length); i++) {
+      const c = cents[i], w = ctx.measureText(c.name).width + pad * 2, h = fs + pad * 1.4, r = {x: c.x - w / 2, y: c.y - h / 2, w, h};
+      if (drawn.some(d => r.x < d.x + d.w && r.x + r.w > d.x && r.y < d.y + d.h && r.y + r.h > d.y)) continue;
+      drawn.push(r);
+      ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(r.x, r.y, r.w, r.h, r.h / 2); else ctx.rect(r.x, r.y, r.w, r.h);
+      ctx.fill(); ctx.fillStyle = '#1b1e1f'; ctx.fillText(c.name, c.x, c.y);
+    }
+    ctx.restore();
+  });
+  network.on('zoom', () => { clearTimeout(zt); zt = setTimeout(() => labelPass(false), 180); });
+  network.on('dragEnd', () => calcCents());
+  network.on('stabilizationIterationsDone', () => { calcCents(); labelPass(true); network.redraw(); });
+  calcCents(); labelPass(true);
+
+  /* ---------- colour by community / type / folder, shapes, hubs, isolate by category ---------- */
+  const RN = new Map(RAW_NODES.map(n => [n.id, n]));
+  const KINDS = {code: ['Code', '#4E79A7', 'dot'], document: ['Docs', '#F28E2B', 'square'], paper: ['Papers', '#E15759', 'square'], image: ['Images', '#76B7B2', 'triangle'], rationale: ['Rationale', '#B07AA1', 'diamond'], concept: ['Concepts', '#EDC948', 'diamond']};
+  const PAL = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'];
+  const fsegs = n => String(n.source_file || '').split(/[\\/]/).filter(Boolean).slice(0, -1);
+  let pre = null;
+  RAW_NODES.forEach(n => { if (!n.source_file) return; const d = fsegs(n); if (pre === null) pre = d.slice(); else { let k = 0; while (k < pre.length && k < d.length && pre[k] === d[k]) k++; pre.length = k; } });
+  const folderOf = new Map(RAW_NODES.map(n => { const rest = fsegs(n).slice((pre || []).length); return [n.id, !n.source_file ? '(no file)' : (rest[0] || '(root)')]; }));
+  function catKeyFor(mode, id) { const n = RN.get(id); return mode === 'type' ? (n.file_type || 'other') : mode === 'folder' ? folderOf.get(id) : n.community; }
+  let cmode = 'community', shapes = false;
+  const catList = mode => { const m = new Map(); RAW_NODES.forEach(n => { const k = catKeyFor(mode, n.id); m.set(k, (m.get(k) || 0) + 1); }); return Array.from(m, ([key, count]) => ({key, count})).sort((a, b) => b.count - a.count); };
+  const folderCols = new Map(catList('folder').map((c, i) => [c.key, PAL[i % PAL.length]]));
+  const catColour = (mode, key) => mode === 'type' ? (KINDS[key] || [0, '#8a8e92'])[1] : mode === 'folder' ? (folderCols.get(key) || '#8a8e92') : '#8a8e92';
+  function catName() { return catSolo.mode === 'folder' ? 'Folder: ' + catSolo.key : 'Type: ' + ((KINDS[catSolo.key] || [catSolo.key])[0]); }
+  function paintCats() {
+    $('#gf-colour .gf-lab').textContent = 'Colour & shape' + (cmode === 'community' ? '' : ' · by ' + cmode);
+    $$('#gf-colour .gf-seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.cm === cmode));
+    const sh = $('#gf-shapes'); sh.setAttribute('aria-pressed', shapes); sh.classList.toggle('on', shapes); $('.gf-badge', sh).textContent = shapes ? 'on' : 'off';
+    const box = $('#gf-cats');
+    if (cmode === 'community') { box.innerHTML = '<div class="gf-recent-empty">Colours show communities. Pick Type or Folder to group differently.</div>'; return; }
+    box.innerHTML = catList(cmode).slice(0, 14).map(c => '<button type="button" class="gf-nav' + (catSolo && catSolo.mode === cmode && catSolo.key === c.key ? ' on' : '') + '" data-key="' + E(c.key) + '"><span class="gf-fold"><i style="background:' + catColour(cmode, c.key) + '"></i></span><span class="gf-l">' + E(cmode === 'type' ? ((KINDS[c.key] || [c.key])[0]) : c.key) + '</span><span class="gf-badge">' + c.count + '</span></button>').join('');
+  }
+  function applyColour() {
+    RAW_NODES.forEach(n => {
+      if (cmode === 'community') { baseColor.set(n.id, n.color); return; }
+      const c = catColour(cmode, catKeyFor(cmode, n.id));
+      baseColor.set(n.id, {background: c, border: c, highlight: {background: '#ffffff', border: c}});
+    });
+    if (hlId !== null && hlId !== '__path__') highlight(hlId); else if (hlId === null) nodesDS.update(RAW_NODES.map(n => ({id: n.id, color: baseColor.get(n.id)})));
+    if (catSolo && catSolo.mode !== cmode) { catSolo = null; apply(true); }
+    paintCats();
+  }
+  function applyShapes() { nodesDS.update(RAW_NODES.map(n => ({id: n.id, shape: shapes ? ((KINDS[n.file_type] || [0, 0, 'dot'])[2]) : 'dot'}))); paintCats(); }
+  $$('#gf-colour .gf-seg button').forEach(b => b.addEventListener('click', () => { cmode = b.dataset.cm; applyColour(); }));
+  $('#gf-shapes').addEventListener('click', () => { shapes = !shapes; applyShapes(); });
+  $('#gf-cats').addEventListener('click', e => { const b = e.target.closest('[data-key]'); if (!b) return; const key = b.dataset.key; catSolo = (catSolo && catSolo.mode === cmode && catSolo.key === key) ? null : {mode: cmode, key}; apply(true); });
+  const hubs = RAW_NODES.slice().sort((a, b) => (b.degree || 0) - (a.degree || 0)).slice(0, 8);
+  $('#gf-hubs-list').innerHTML = hubs.map(n => '<button type="button" class="gf-nav" data-nid="' + E(n.id) + '">' + ic('graph') + '<span class="gf-l">' + E(short(n.label)) + '</span><span class="gf-badge">' + (n.degree || 0) + '</span></button>').join('');
+  $('#gf-hubs-list').addEventListener('click', e => { const b = e.target.closest('[data-nid]'); if (b) focusNode(b.dataset.nid); });
+  applyShapes();
+
+  /* ---------- path finder ---------- */
+  let pathFrom = null, pathRes = null, adj = null;
+  const pb = document.createElement('div'); pb.id = 'gf-pathbar'; pb.className = 'gf-pathbar'; pb.hidden = true; pb.textContent = 'Pick the destination node on the graph \u00b7 Esc to cancel'; document.body.appendChild(pb);
+  function bfs(a, b) {
+    if (!adj) { adj = new Map(); RAW_EDGES.forEach((e, i) => { if (e.from === e.to) return; (adj.get(e.from) || adj.set(e.from, []).get(e.from)).push([e.to, i]); (adj.get(e.to) || adj.set(e.to, []).get(e.to)).push([e.from, i]); }); }
+    const prev = new Map([[a, null]]), q = [a];
+    for (let h = 0; h < q.length; h++) { const x = q[h]; if (x === b) break; for (const [y, i] of (adj.get(x) || [])) if (!prev.has(y)) { prev.set(y, [x, i]); q.push(y); } }
+    if (!prev.has(b)) return null;
+    const nodes = [], edges = []; let c = b;
+    while (c !== null) { nodes.unshift(c); const pv = prev.get(c); if (pv) edges.unshift(pv[1]); c = pv ? pv[0] : null; }
+    return {nodes, edges};
+  }
+  const C_PATH = '#ff4fa0';
+  function highlightPath(res) {
+    hlId = '__path__'; hlSet = new Set(res.nodes);
+    const pe = new Set(res.edges);
+    edgesDS.update(RAW_EDGES.map((e, i) => pe.has(i) ? {id: i, width: 5, color: {color: C_PATH, highlight: C_PATH, hover: C_PATH, opacity: 1, inherit: false}} : {id: i, width: 1, color: {opacity: .04}}));
+    nodesDS.update(RAW_NODES.map(n => {
+      const bc = baseColor.get(n.id) || n.color, bg = (bc && bc.background) || '#888';
+      if (hlSet.has(n.id)) return {id: n.id, borderWidth: 4, color: {background: bg, border: C_PATH, highlight: {background: '#ffffff', border: C_PATH}}};
+      const d = rgba(bg, .12); return {id: n.id, borderWidth: 1.5, color: {background: d, border: d, highlight: {background: d, border: d}}};
+    }));
+    labelPass(true);
+  }
+  function renderPath() {
+    const r = pathRes, ok = r.nodes.length > 0, hops = Math.max(r.nodes.length - 1, 0);
+    const steps = r.nodes.map((id, i) => {
+      const e = i < r.edges.length ? RAW_EDGES[r.edges[i]] : null;
+      const rel = e ? (e.from === id ? (e.label || 'linked') + ' \u2192' : '\u2190 ' + (e.label || 'linked') + ' (reverse)') : 'destination';
+      return '<button type="button" class="gf-pin" data-nid="' + E(id) + '"><span class="gf-circ">' + (i + 1) + '</span><span class="gf-pin-main"><span class="gf-pin-label">' + E(FL.get(id) || id) + '</span><span class="gf-pin-rel">' + (i === 0 ? 'start \u00b7 ' : '') + E(rel) + '</span></span></button>';
+    }).join('');
+    card.innerHTML =
+      '<div class="gf-c-top"><span class="gf-pill"><span class="gf-fold"><i style="background:' + C_PATH + '"></i></span><span>Path</span></span><button type="button" class="gf-c-x" data-act="close" aria-label="Close details">' + ic('close', 1.8) + '</button></div>' +
+      '<div class="gf-c-hero"><div class="gf-c-num">' + (ok ? hops : '\u2013') + '</div><div class="gf-c-cap">' + (ok ? (hops === 1 ? 'hop' : 'hops') + ' between the two nodes' : 'no connection between these nodes') + '</div>' +
+        '<div class="gf-c-name">' + E(FL.get(r.from) || r.from) + ' \u2192 ' + E(FL.get(r.to) || r.to) + '</div></div>' +
+      '<div class="gf-c-acts"><button type="button" class="gf-btn dark" data-act="clearpath">Clear path</button></div>' +
+      '<div class="gf-list">' + (ok ? steps : '<div class="gf-cempty">These two nodes are in separate parts of the graph.</div>') + '</div>';
+    const was = card.hidden; card.hidden = false; if (was) { card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
+  }
+  function showPath(a, b) {
+    pathFrom = null; pb.hidden = true;
+    const res = bfs(a, b); pathRes = Object.assign({from: a, to: b, nodes: [], edges: []}, res || {});
+    curId = b; if (card.hidden) prevFocus = document.activeElement;
+    renderPath(); if (res) highlightPath(res); else clearHighlight();
+    $('#gf-sr').textContent = res ? 'Path found, ' + (res.nodes.length - 1) + ' hops' : 'No path found';
+  }
+
+  /* ---------- smarter search: names and file paths, type filter, keyboard ---------- */
+  const gres = document.createElement('div'); gres.id = 'gf-results'; gres.hidden = true; $('#gf-find').appendChild(gres);
+  let sFilter = 'all', sIdx = 0, sList = [];
+  function runSearch() {
+    const q = search.value.toLowerCase().trim();
+    if (!q) { gres.hidden = true; return; }
+    const all = RAW_NODES.filter(n => n.label.toLowerCase().includes(q) || String(n.source_file || '').toLowerCase().includes(q));
+    const kinds = Array.from(new Set(all.map(n => n.file_type || 'other')));
+    sList = all.filter(n => sFilter === 'all' || (n.file_type || 'other') === sFilter).sort((a, b) => (+b.label.toLowerCase().startsWith(q) - +a.label.toLowerCase().startsWith(q)) || (b.degree || 0) - (a.degree || 0)).slice(0, 30);
+    if (sIdx >= sList.length) sIdx = 0;
+    gres.innerHTML = '<div class="gf-chips">' + ['all'].concat(kinds).map(k => '<button type="button" data-k="' + E(k) + '" aria-pressed="' + (k === sFilter) + '">' + E(k === 'all' ? 'All ' + all.length : ((KINDS[k] || [k])[0])) + '</button>').join('') + '</div>' +
+      (sList.length ? sList.map((n, i) => '<button type="button" class="gf-sr-item' + (i === sIdx ? ' cur' : '') + '" data-nid="' + E(n.id) + '"><span class="gf-fold"><i style="background:' + E(((baseColor.get(n.id) || n.color || {}).background) || '#888') + '"></i></span><span class="gf-sr-main"><b>' + E(n.label) + '</b><small>' + E(String(n.source_file || '').split(/[\\/]/).slice(-3).join('/') || (n.file_type || '')) + '</small></span><span class="gf-badge">' + (n.degree || 0) + '</span></button>').join('') : '<div class="gf-cempty">No node matches.</div>');
+    gres.hidden = false;
+  }
+  function pick(id) { gres.hidden = true; search.value = ''; sFilter = 'all'; focusNode(id); }
+  search.addEventListener('input', () => { sIdx = 0; runSearch(); });
+  search.addEventListener('keydown', e => {
+    if (gres.hidden) return;
+    if (e.key === 'ArrowDown') { sIdx = Math.min(sIdx + 1, sList.length - 1); runSearch(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { sIdx = Math.max(sIdx - 1, 0); runSearch(); e.preventDefault(); }
+    else if (e.key === 'Enter' && sList[sIdx]) pick(sList[sIdx].id);
+    else if (e.key === 'Escape') gres.hidden = true;
+  });
+  gres.addEventListener('click', e => { const k = e.target.closest('[data-k]'); if (k) { sFilter = k.dataset.k; sIdx = 0; runSearch(); search.focus(); return; } const b = e.target.closest('[data-nid]'); if (b) pick(b.dataset.nid); });
+  document.addEventListener('click', e => { if (!gres.contains(e.target) && e.target !== search) gres.hidden = true; });
+
+  /* ---------- minimap ---------- */
+  const mini = document.createElement('div'); mini.className = 'gf-mini';
+  mini.innerHTML = '<canvas width="440" height="300" aria-label="Minimap of the whole graph"></canvas><button type="button" class="gf-fit">Fit all</button>'; document.body.appendChild(mini);
+  const mc = $('canvas', mini), mx = mc.getContext('2d'); let mraf = 0, mb = null;
+  function drawMini() {
+    mraf = 0; const W = mc.width, H = mc.height; mx.clearRect(0, 0, W, H);
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; const vs = [];
+    RAW_NODES.forEach(n => { const q = posCache[n.id]; if (!q || !vis(n.id)) return; vs.push([n, q]); if (q.x < x0) x0 = q.x; if (q.x > x1) x1 = q.x; if (q.y < y0) y0 = q.y; if (q.y > y1) y1 = q.y; });
+    if (!vs.length) return;
+    const pad = 16, k = Math.min((W - pad * 2) / Math.max(x1 - x0, 1), (H - pad * 2) / Math.max(y1 - y0, 1));
+    const ox = (W - (x1 - x0) * k) / 2 - x0 * k, oy = (H - (y1 - y0) * k) / 2 - y0 * k; mb = {k, ox, oy};
+    vs.forEach(([n, q]) => { const bc = baseColor.get(n.id) || n.color; mx.fillStyle = (bc && bc.background) || '#888'; mx.fillRect(q.x * k + ox - 1.5, q.y * k + oy - 1.5, 3, 3); });
+    const s = network.getScale(), c = network.getViewPosition(), vw = graphEl.clientWidth / s, vh = graphEl.clientHeight / s;
+    mx.strokeStyle = '#ffffff'; mx.lineWidth = 3; mx.strokeRect((c.x - vw / 2) * k + ox, (c.y - vh / 2) * k + oy, vw * k, vh * k);
+  }
+  const queueMini = () => { if (!mraf) mraf = requestAnimationFrame(drawMini); };
+  network.on('afterDrawing', queueMini);
+  function miniPan(ev) { if (!mb) return; const r = mc.getBoundingClientRect(); network.moveTo({position: {x: ((ev.clientX - r.left) * (mc.width / r.width) - mb.ox) / mb.k, y: ((ev.clientY - r.top) * (mc.height / r.height) - mb.oy) / mb.k}, animation: false}); }
+  let mdrag = false;
+  mc.addEventListener('pointerdown', e => { mdrag = true; mc.setPointerCapture(e.pointerId); miniPan(e); });
+  mc.addEventListener('pointermove', e => { if (mdrag) miniPan(e); });
+  mc.addEventListener('pointerup', () => { mdrag = false; });
+  $('.gf-fit', mini).addEventListener('click', () => { try { network.fit({animation: {duration: 450, easingFunction: 'easeOutQuart'}}); } catch (e) {} });
+  queueMini();
+
+  /* ---------- zones: arrange the graph into labelled areas (back end / front end / run / data) ---------- */
+  const ZONES = [
+    {id: 'be', name: 'Back end', pos: 'top left', r: [0.00, 0.00, 0.45, 0.36]},
+    {id: 'fe', name: 'Front end', pos: 'top right', r: [0.55, 0.00, 1.00, 0.36]},
+    {id: 'run', name: 'Run', pos: 'middle', r: [0.30, 0.43, 0.70, 0.58]},
+    {id: 'data', name: 'Data', pos: 'bottom', r: [0.08, 0.66, 0.92, 1.00]}
+  ];
+  const ZBYID = new Map(ZONES.map(z => [z.id, z]));
+  const zoneOverride = new Map();
+  let zoned = false, origPos = null, zrects = null, zassign = new Map(), zt2 = 0;
+  const segsOf = n => String(n.source_file || '').toLowerCase().split(/[\\/]/).filter(Boolean);
+  function zoneOfNode(n) {
+    const s = segsOf(n); if (!s.length) return null;
+    const base = s[s.length - 1], dirs = s.slice(0, -1);
+    if (/^(main|run|cli|app|index|server|serve|manage|__main__|entry)(\.|$)/.test(base)) return 'run';
+    if (dirs.some(d => /^(front.*|ui|web|client|views?|pages?|components?|templates?|public|static)$/.test(d)) || /(notif|sms|view|page|template)/.test(base)) return 'fe';
+    if (dirs.some(d => /^(models?|schemas?|db|database|data|store|storage|entit(y|ies)|migrations?|repos?|repositor(y|ies))$/.test(d)) || /^(models?|schema|db|store)\./.test(base)) return 'data';
+    return 'be';
+  }
+  function ensureAdj() {
+    if (!adj) { adj = new Map(); RAW_EDGES.forEach((e, i) => { if (e.from === e.to) return; (adj.get(e.from) || adj.set(e.from, []).get(e.from)).push([e.to, i]); (adj.get(e.to) || adj.set(e.to, []).get(e.to)).push([e.from, i]); }); }
+    return adj;
+  }
+  function assignZones() {
+    zassign = new Map(); RAW_NODES.forEach(n => { const z = zoneOverride.get(n.community) || zoneOfNode(n); if (z) zassign.set(n.id, z); });
+    const A = ensureAdj();
+    for (let pass = 0; pass < 4; pass++) RAW_NODES.forEach(n => {
+      if (zassign.has(n.id)) return;
+      const c = {}; (A.get(n.id) || []).forEach(([o]) => { const z = zassign.get(o); if (z) c[z] = (c[z] || 0) + 1; });
+      const best = Object.keys(c).sort((a, b) => c[b] - c[a])[0]; if (best) zassign.set(n.id, best); else if (pass === 3) zassign.set(n.id, 'be');
+    });
+  }
+  function relaxInto(r, ids, out) {
+    const n = ids.length; if (!n) return;
+    const idx = new Map(ids.map((id, i) => [id, i])), px = new Float64Array(n), py = new Float64Array(n);
+    let a0 = 1e9, b0 = 1e9, a1 = -1e9, b1 = -1e9;
+    ids.forEach(id => { const q = origPos.get(id); if (!q) return; a0 = Math.min(a0, q.x); a1 = Math.max(a1, q.x); b0 = Math.min(b0, q.y); b1 = Math.max(b1, q.y); });
+    ids.forEach((id, i) => { const q = origPos.get(id) || {x: a0, y: b0}; px[i] = r.x + 10 + (q.x - a0) / Math.max(a1 - a0, 1) * (r.w - 20); py[i] = r.y + 10 + (q.y - b0) / Math.max(b1 - b0, 1) * (r.h - 20); });
+    const es = []; RAW_EDGES.forEach(e => { const a = idx.get(e.from), b = idx.get(e.to); if (a !== undefined && b !== undefined && a !== b) es.push(a, b); });
+    const cell = Math.max(Math.sqrt(r.w * r.h / n) * 0.9, 8);
+    for (let it = 0; it < 70; it++) {
+      const fx = new Float64Array(n), fy = new Float64Array(n), g = new Map();
+      for (let i = 0; i < n; i++) { const k = Math.floor(px[i] / cell) * 100003 + Math.floor(py[i] / cell); (g.get(k) || g.set(k, []).get(k)).push(i); }
+      for (let i = 0; i < n; i++) {
+        const cx = Math.floor(px[i] / cell), cy = Math.floor(py[i] / cell);
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+          const c = g.get((cx + dx) * 100003 + cy + dy); if (!c) continue;
+          for (const j of c) { if (j <= i) continue; const vx = px[i] - px[j], vy = py[i] - py[j], d2 = vx * vx + vy * vy + 0.01; if (d2 > cell * cell * 4) continue; const f = cell * cell / d2; fx[i] += vx * f; fy[i] += vy * f; fx[j] -= vx * f; fy[j] -= vy * f; }
+        }
+      }
+      for (let k = 0; k < es.length; k += 2) { const a = es[k], b = es[k + 1], vx = px[b] - px[a], vy = py[b] - py[a], d = Math.sqrt(vx * vx + vy * vy) + 0.01, f = (d - cell * 1.2) * 0.08 / d; fx[a] += vx * f; fy[a] += vy * f; fx[b] -= vx * f; fy[b] -= vy * f; }
+      const cool = 1 - it / 80;
+      for (let i = 0; i < n; i++) { const l = Math.hypot(fx[i], fy[i]) || 1, m = Math.min(l, cell * 0.6 * cool + 0.5); px[i] = Math.min(r.x + r.w - 8, Math.max(r.x + 8, px[i] + fx[i] / l * m)); py[i] = Math.min(r.y + r.h - 8, Math.max(r.y + 8, py[i] + fy[i] / l * m)); }
+    }
+    ids.forEach((id, i) => out.set(id, {x: px[i], y: py[i]}));
+  }
+  function arrangeZones() {
+    const cur = network.getPositions();
+    if (!origPos) origPos = new Map(RAW_NODES.map(n => [n.id, {x: (cur[n.id] || {x: 0}).x, y: (cur[n.id] || {y: 0}).y}]));
+    assignZones();
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; origPos.forEach(q => { x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); });
+    const L = Math.max(x1 - x0, y1 - y0, 400) * 1.15, H = L * 0.8;
+    zrects = new Map(ZONES.map(z => [z.id, {x: z.r[0] * L, y: z.r[1] * H, w: (z.r[2] - z.r[0]) * L, h: (z.r[3] - z.r[1]) * H}]));
+    const groups = new Map(ZONES.map(z => [z.id, []])); RAW_NODES.forEach(n => groups.get(zassign.get(n.id) || 'be').push(n.id));
+    const out = new Map(); groups.forEach((ids, zid) => relaxInto(zrects.get(zid), ids, out));
+    nodesDS.update(RAW_NODES.map(n => ({id: n.id, x: out.get(n.id).x, y: out.get(n.id).y})));
+    calcCents(); paintZones();
+    try { network.fit({animation: {duration: 500, easingFunction: 'easeOutQuart'}}); } catch (e) {}
+  }
+  function restoreZones() {
+    if (!origPos) return;
+    nodesDS.update(RAW_NODES.map(n => ({id: n.id, x: origPos.get(n.id).x, y: origPos.get(n.id).y})));
+    calcCents(); paintZones();
+    try { network.fit({animation: {duration: 500, easingFunction: 'easeOutQuart'}}); } catch (e) {}
+  }
+  function commZone(cid) {
+    if (zoneOverride.has(cid)) return zoneOverride.get(cid);
+    const c = {}; RAW_NODES.forEach(n => { if (n.community === cid) { const z = zassign.get(n.id); if (z) c[z] = (c[z] || 0) + 1; } });
+    return Object.keys(c).sort((a, b) => c[b] - c[a])[0] || 'be';
+  }
+  function renderZoneList() {
+    $('#gf-zonelist').innerHTML = ZONES.map(z => '<div class="gf-zrow"><span class="gf-zpos">' + z.pos + '</span><input class="gf-zname" data-z="' + z.id + '" value="' + E(z.name) + '" aria-label="Name of the ' + z.pos + ' zone" maxlength="24"><span class="gf-badge" data-zb="' + z.id + '">\u2013</span></div>').join('');
+  }
+  function paintZones() {
+    const tg = $('#gf-zonetoggle'); tg.setAttribute('aria-pressed', zoned); tg.classList.toggle('on', zoned); $('.gf-badge', tg).textContent = zoned ? 'on' : 'off';
+    const cnt = {}; zassign.forEach(z => { cnt[z] = (cnt[z] || 0) + 1; });
+    $$('[data-zb]').forEach(b => { b.textContent = zoned ? (cnt[b.dataset.zb] || 0) : '\u2013'; });
+    if (zoned) $$('.gf-tr').forEach(el => { const t = $('.gf-ztag', el); if (t) t.textContent = ZBYID.get(commZone(+el.dataset.cid)).name; });
+  }
+  renderZoneList();
+  $('#gf-zonetoggle').addEventListener('click', () => {
+    zoned = !zoned; document.body.classList.toggle('gf-zoned', zoned);
+    if (zoned) arrangeZones(); else { restoreZones(); }
+    paintZones();
+  });
+  $('#gf-zonelist').addEventListener('input', e => { const z = ZBYID.get(e.target.dataset.z); if (z) { z.name = e.target.value.trim() || z.pos; paintZones(); try { network.redraw(); } catch (x) {} } });
+  $('#gf-tree').addEventListener('click', e => {
+    const b = e.target.closest('[data-zc]'); if (!b) return; e.stopPropagation();
+    const cid = +b.dataset.zc, cur = commZone(cid), nxt = ZONES[(ZONES.findIndex(z => z.id === cur) + 1) % ZONES.length].id;
+    zoneOverride.set(cid, nxt); clearTimeout(zt2); zt2 = setTimeout(arrangeZones, 120); b.textContent = ZBYID.get(nxt).name;
+  });
+  network.on('beforeDrawing', ctx => {
+    if (!zoned || !zrects) return;
+    const s = network.getScale(); ctx.save();
+    ZONES.forEach(z => { const r = zrects.get(z.id); ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(r.x, r.y, r.w, r.h, 40); else ctx.rect(r.x, r.y, r.w, r.h); ctx.fillStyle = 'rgba(255,255,255,.035)'; ctx.fill(); ctx.setLineDash([14 / s, 10 / s]); ctx.lineWidth = 1.5 / s; ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.stroke(); });
+    ctx.restore();
+  });
+  network.on('afterDrawing', ctx => {
+    if (!zoned || !zrects) return;
+    const s = network.getScale(), cnt = {}; zassign.forEach(z => { cnt[z] = (cnt[z] || 0) + 1; });
+    ctx.save(); ctx.font = '700 ' + 17 / s + 'px ' + getComputedStyle(document.body).fontFamily; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ZONES.forEach(z => { const r = zrects.get(z.id), txt = z.name + ' \u00b7 ' + (cnt[z.id] || 0), w = ctx.measureText(txt).width + 28 / s, h = 34 / s, x = r.x + 18 / s, y = r.y + 18 / s;
+      ctx.fillStyle = '#1f2a2a'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, h / 2); else ctx.rect(x, y, w, h); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.fillText(txt, x + 14 / s, y + h / 2); });
+    ctx.restore();
+  });
+
+  paintRecents(); build();
+})();
+</script>
